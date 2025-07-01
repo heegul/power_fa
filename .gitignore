@@ -1,12 +1,28 @@
-# Ignore Python virtual environments
+# Track only Python (*.py) and MATLAB (*.m) source files
+# -----------------------------------------------------
+
+# 1) Ignore everything by default
+*
+
+# 2) Re-allow all directories so git can inspect inside them
+!*/
+
+# 3) Whitelist the file types we want under version control
+!*.py
+!*.m
+!*.ipynb
+!*.md
+
+# 4) Keep the gitignore itself in the repo
+!.gitignore
+
+# 5) Explicit ignores that should always stay out of git
 .venv/
 
-# Ignore any file or directory whose name starts with "tmp" at any depth
+# Any file or directory whose name starts with "tmp"
 tmp*
 **/tmp*
 
-# Ignore pickle files
+# Binary / large artefacts
 *.pkl
-
-# Ignore PNG image files
 *.png 
