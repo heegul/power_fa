@@ -3,4 +3,10 @@
 
 # Ignore any file or directory whose name starts with "tmp" at any depth
 tmp*
-**/tmp* 
+**/tmp*
+
+# Ignore pickle files
+*.pkl
+
+# Ignore PNG image files
+*.png 
