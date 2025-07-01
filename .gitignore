@@ -1,0 +1,6 @@
+# Ignore Python virtual environments
+.venv/
+
+# Ignore any file or directory whose name starts with "tmp" at any depth
+tmp*
+**/tmp* 
