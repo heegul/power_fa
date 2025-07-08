@@ -572,6 +572,9 @@ def train_model(cfg: SimulationConfig, hidden_size=None, epochs: int = 500, lr: 
     torch.set_grad_enabled(True)
     
     device = device or ('cuda' if torch.cuda.is_available() else 'mps' if torch.backends.mps.is_available() else 'cpu')
+    # Convert placeholder string 'auto' to a real device understood by torch
+    if isinstance(device, str) and device == 'auto':
+        device = 'cuda' if torch.cuda.is_available() else 'mps' if torch.backends.mps.is_available() else 'cpu'
     print(f"[INFO] Using device: {device}")
     input_mean = None
     input_std = None
@@ -675,7 +678,7 @@ def train_model(cfg: SimulationConfig, hidden_size=None, epochs: int = 500, lr: 
                     # Differentiable FA loss (multi-FA case)
                     tx_power_dbm = 10 * torch.log10(power_lin + 1e-12) + 30
                     loss = negative_sum_rate_loss_torch_soft_from_matrix(
-                        tx_power_dbm.unsqueeze(0), fa_probs.unsqueeze(0), None, cfg, original_batch)
+                        tx_power_dbm, fa_probs, None, cfg, original_batch)
                 else:
                     if cfg.n_fa == 1:
                         # FA=1 bandwidth-free loss (memorisation setting)
@@ -684,7 +687,7 @@ def train_model(cfg: SimulationConfig, hidden_size=None, epochs: int = 500, lr: 
                     else:
                         tx_power_dbm = 10 * torch.log10(power_lin + 1e-12) + 30
                         loss = negative_sum_rate_loss_torch_from_matrix(
-                            tx_power_dbm.unsqueeze(0), fa_probs.unsqueeze(0), None, cfg, original_batch)
+                            tx_power_dbm, fa_probs, None, cfg, original_batch)
 
                 optimizer.zero_grad()
                 loss.backward()
@@ -753,15 +756,15 @@ def train_model(cfg: SimulationConfig, hidden_size=None, epochs: int = 500, lr: 
             if soft_fa and cfg.n_fa > 1:
                 tx_power_dbm = 10 * torch.log10(power_lin + 1e-12) + 30
                 loss = negative_sum_rate_loss_torch_soft_from_matrix(
-                    tx_power_dbm.unsqueeze(0), fa_probs.unsqueeze(0), None, cfg, gains_for_loss)
+                    tx_power_dbm, fa_probs, None, cfg, gains_for_loss)
             else:
                 if cfg.n_fa == 1:
                     loss = negative_sum_rate_loss_torch_fa1_nobw(
-                        power_lin.unsqueeze(0), fa_probs.unsqueeze(0), cfg, gains_for_loss)
+                        power_lin, fa_probs, cfg, gains_for_loss)
                 else:
                     tx_power_dbm = 10 * torch.log10(power_lin + 1e-12) + 30
                     loss = negative_sum_rate_loss_torch_from_matrix(
-                        tx_power_dbm.unsqueeze(0), fa_probs.unsqueeze(0), None, cfg, gains_for_loss)
+                        tx_power_dbm, fa_probs, None, cfg, gains_for_loss)
 
             optimizer.zero_grad()
             loss.backward()
@@ -772,15 +775,15 @@ def train_model(cfg: SimulationConfig, hidden_size=None, epochs: int = 500, lr: 
                 val_power_lin, val_fa_probs = model(val_x_normalized)
                 if cfg.n_fa == 1:
                     val_loss = negative_sum_rate_loss_torch_fa1_nobw(
-                        val_power_lin.unsqueeze(0), val_fa_probs.unsqueeze(0), cfg, original_gains)
+                        val_power_lin, val_fa_probs, cfg, original_gains)
                 else:
                     val_tx_power_dbm = 10 * torch.log10(val_power_lin + 1e-12) + 30
                     if soft_fa:
                         val_loss = negative_sum_rate_loss_torch_soft_from_matrix(
-                            val_tx_power_dbm.unsqueeze(0), val_fa_probs.unsqueeze(0), None, cfg, original_gains)
+                            val_tx_power_dbm, val_fa_probs, None, cfg, original_gains)
                     else:
                         val_loss = negative_sum_rate_loss_torch_from_matrix(
-                            val_tx_power_dbm.unsqueeze(0), val_fa_probs.unsqueeze(0), None, cfg, original_gains)
+                            val_tx_power_dbm, val_fa_probs, None, cfg, original_gains)
                 val_losses.append(val_loss.item())
             if val_loss.item() < best_loss - min_delta:
                 best_loss = val_loss.item()

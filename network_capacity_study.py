@@ -129,14 +129,15 @@ class NetworkCapacityStudy:
         self.target_ratios = target_ratios
         
         # --- Experiment Parameters ---
-        self.num_train_samples_sweep = [1, 2, 5, 10, 100, 1000, 10000]
+        self.num_train_samples_sweep = [1, 2, 5, 10, 100]
+#        self.num_train_samples_sweep = [1000, 10000]
         self.hidden_size_sweep = [
-            [20],
+#            [20],
             [100],
-            [1000],
+#            [1000],
             [200, 200],
-            [600, 600, 600],
-            [1000, 1000, 1000],
+#            [600, 600, 600],
+#           [1000, 1000, 1000],
             [500, 500, 500, 500],
         ]
         self.generalization_eval = generalization_eval

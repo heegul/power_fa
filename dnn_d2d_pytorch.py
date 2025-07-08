@@ -410,6 +410,10 @@ class D2DNet(nn.Module):
         
         # Soft gradients (backward) - straight-through estimator
         power_values_soft = torch.sum(power_probs * power_levels_tensor.view(1, 1, -1), dim=2)
+        # Straight-through estimator implementation:
+        # Forward pass: use hard discrete values (power_values_hard.detach())
+        # Backward pass: use soft continuous gradients (power_values_soft - power_values_soft.detach())
+        # This allows discrete decisions during forward pass while maintaining gradient flow during backprop
         power_values = power_values_hard.detach() + power_values_soft - power_values_soft.detach()
         
         # FA (same as regular forward)
